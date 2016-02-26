@@ -145,6 +145,14 @@ static void HspVarStruct_Set( PVal *pval, PDAT *pdat, const void *in )
 	//sbCopy( (char **)pdat, (char *)fv->ptr, fv->size );
 }
 
+// Dup
+static void HspVarStruct_Dup(PVal *pval, PVal *arg, APTR aptr) 
+{
+	PDAT *pdat = HspVarCorePtrAPTR(arg, aptr);
+	int size = arg->size - (((char *)pdat) - arg->pt);
+	HspVarCoreDupPtr(pval, arg->flag, pdat, size);
+}
+
 /*
 // INVALID
 static void HspVarStruct_Invalid( PDAT *pval, const void *val )
@@ -171,6 +179,7 @@ static void AllocBlock( PVal *pval, PDAT *pdat, int size )
 void HspVarStruct_Init( HspVarProc *p )
 {
 	p->Set = HspVarStruct_Set;
+	p->Dup = HspVarStruct_Dup;
 	p->GetPtr = HspVarStruct_GetPtr;
 //	p->Cnv = HspVarStruct_Cnv;
 //	p->CnvCustom = HspVarStruct_CnvCustom;

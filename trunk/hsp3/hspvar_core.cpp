@@ -130,6 +130,7 @@ void HspVarCoreRegisterType( int flag, HSPVAR_COREFUNC func )
 		if ( procs == (void **)(&p->LrI) ) break;
 		procs++;
 	}
+	p->Dup = HspVarCoreDupDefault;
 
 	//	初期化関数の呼び出し
 
@@ -169,7 +170,16 @@ void HspVarCoreDupPtr( PVal *pval, int flag, void *ptr, int size )
 }
 
 
-void HspVarCoreDup( PVal *pval, PVal *arg, APTR aptr )
+void HspVarCoreDup(PVal *pval, PVal *arg, APTR aptr)
+{
+	//		指定された変数のクローンになる
+	//
+
+	hspvarproc[arg->flag].Dup(pval, arg, aptr);
+}
+
+
+void HspVarCoreDupDefault( PVal *pval, PVal *arg, APTR aptr )
 {
 	//		指定された変数のクローンになる
 	//

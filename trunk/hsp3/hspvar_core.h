@@ -158,6 +158,11 @@ typedef struct
 
 	void (*RrI)( PDAT *pval, const void *val );
 	void (*LrI)( PDAT *pval, const void *val );
+
+	//		システム参照用
+	// (ver3.5～)
+	void(*Dup)(PVal *pval, PVal *arg, APTR aptr);
+
 } HspVarProc;
 
 extern HspVarProc *hspvarproc;
@@ -206,6 +211,7 @@ HspVarProc *HspVarCoreSeekProc( const char *name );
 
 //		low level support functions
 //
+void HspVarCoreDupDefault( PVal *pval, PVal *arg, APTR aptr );
 void HspVarCoreDup( PVal *pval, PVal *arg, APTR aptr );
 void HspVarCoreDupPtr( PVal *pval, int flag, void *ptr, int size );
 void HspVarCoreClear( PVal *pval, int flag );
