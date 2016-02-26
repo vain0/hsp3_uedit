@@ -1243,20 +1243,18 @@ static int code_callfunc( int cmd )
 */
 /*------------------------------------------------------------*/
 
+extern int HspVarStruct_FirstNullElementIndex(PVal *pval);
+extern void HspVarStruct_OnElementModified(PVal *pval, int index);
+
 APTR code_newstruct( PVal *pval )
 {
-	int i,max;
-	APTR ofs;
-	FlexValue *fv;
-	ofs = 0;
 	if ( pval->flag != TYPE_STRUCT ) return 0;
-	fv = (FlexValue *)pval->pt;
-	max = pval->len[1];
-	for( i=0;i<max;i++ ) {
-		if ( fv[i].type == FLEXVAL_TYPE_NONE ) return i;
+
+	APTR i = HspVarStruct_FirstNullElementIndex(pval);
+	if ( i >= pval->len[1] ) {
+		HspVarCoreReDim(pval, 1, i + 1);
 	}
-	HspVarCoreReDim( pval, 1, max+1 );				// ”z—ñ‚ðŠg’£‚·‚é
-	return max;
+	return i;
 }
 
 
@@ -1418,6 +1416,7 @@ void code_delstruct( PVal *in_pval, APTR in_aptr )
 	//Alertf("STRUCT:BYE");
 	sbFree( fv->ptr );
 	fv->type = FLEXVAL_TYPE_NONE;
+	HspVarStruct_OnElementModified(in_pval, in_aptr);
 }
 
 
@@ -1983,6 +1982,7 @@ static int cmdfunc_prog( int cmd )
 		fv->type = FLEXVAL_TYPE_ALLOC;
 		p = sbAlloc( fv->size );
 		fv->ptr = (void *)p;
+		HspVarStruct_OnElementModified(pval, aptr);
 		prm = &hspctx->mem_minfo[ st->prmindex ];
 		if ( prm->mptype != MPTYPE_STRUCTTAG ) throw HSPERR_STRUCT_REQUIRED;
 		code_expandstruct(p, st, CODE_EXPANDSTRUCT_OPT_NONE);

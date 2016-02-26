@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "hsp3code.h"
 #include "hspvar_core.h"
 #include "hsp3debug.h"
@@ -19,11 +20,44 @@
 */
 /*------------------------------------------------------------*/
 
+struct StructMaster
+{
+	// 最初の null 要素の位置 (なければ pval->len[1])
+	int i_first_null;
+};
+
+#define GetPtr(pdat) ((FlexValue *)(pdat))
+#define GetMaster(pval) ((StructMaster *)(pval)->master)
 
 // Core
 static PDAT *HspVarStruct_GetPtr( PVal *pval )
 {
 	return (PDAT *)(( (FlexValue *)(pval->pt))+pval->offset);
+}
+
+int HspVarStruct_FirstNullElementIndex(PVal *pval)
+{
+	return GetMaster(pval)->i_first_null;
+}
+
+void HspVarStruct_OnElementModified(PVal *pval, int index)
+{
+	assert( pval->flag == HSPVAR_FLAG_STRUCT );
+	FlexValue *fv = GetPtr(pval->pt);
+	int& i_first_null = GetMaster(pval)->i_first_null;
+
+	if ( fv[index].type == FLEXVAL_TYPE_NONE ) {
+		if ( index < i_first_null ) { i_first_null = index; }
+	} else {
+		if ( index == i_first_null ) {
+			// 次の null 要素の位置を探す
+			int i = i_first_null + 1;
+			for ( ; i < pval->len[1]; i++ ) {
+				if ( GetPtr(pval->pt)[i].type == FLEXVAL_TYPE_NONE ) break;
+			}
+			i_first_null = i;
+		}
+	}
 }
 
 /*
@@ -66,6 +100,7 @@ static void HspVarStruct_Free( PVal *pval )
 			fv++;
 		}
 		sbFree( pval->pt );
+		sbFree( pval->master );
 	}
 	pval->mode = HSPVAR_MODE_NONE;
 }
@@ -78,32 +113,47 @@ static void HspVarStruct_Alloc( PVal *pval, const PVal *pval2 )
 	//		(pval2がNULLの場合は、新規データ)
 	//		(pval2が指定されている場合は、pval2の内容を継承して再確保)
 	//
-	int i,size;
+	int size;
 	char *pt;
-	FlexValue *fv;
 	if ( pval->len[1] < 1 ) pval->len[1] = 1;		// 配列を最低1は確保する
-	pval->mode = HSPVAR_MODE_MALLOC;
-	size = sizeof(FlexValue) * pval->len[1];
-	pt = sbAlloc( size );
-	fv = (FlexValue *)pt;
-	for(i=0;i<pval->len[1];i++) {
+	size = pval->len[1] * sizeof(FlexValue);
 
-/*
-	rev 53
-	BT#113: dimtypeでstruct型(モジュール型)変数が不完全な状態で作成される
-	に対処。
-*/
+	int old_size;
+	if ( pval == pval2 ) {
+		old_size = pval2->size;
+		if ( size > STRBUF_BLOCKSIZE ) {
+			size = (size > old_size ? size + size / 8 : old_size);
+		}
+		pt = sbExpand(pval->pt, size);
+	} else {
+		pt = sbAlloc(size);
+		StructMaster *mas = (StructMaster *)sbAlloc(sizeof(StructMaster));
 
-		memset( fv, 0, sizeof( FlexValue ) );
-		fv->type = FLEXVAL_TYPE_NONE;
-		fv++;
+		if ( pval2 == NULL ) {
+			old_size = 0;
+			mas->i_first_null = 0;
+		} else {
+			old_size = pval2->size;
+			memcpy(pt, pval2->pt, pval2->size);
+			sbFree(pval->pt);
+			*mas = *GetMaster(pval2);
+		}
+
+		pval->master = mas;
 	}
-	if ( pval2 != NULL ) {
-		memcpy( pt, pval->pt, pval->size );
-		sbFree( pval->pt );
+
+	// 新規要素を初期化
+	if ( size > old_size ) {
+		memset(pt + old_size, 0, size - old_size);
+		int index_new = old_size / sizeof(FlexValue);
+		if ( index_new < GetMaster(pval)->i_first_null ) {
+			GetMaster(pval)->i_first_null = index_new;
+		}
 	}
+
 	pval->pt = pt;
 	pval->size = size;
+	pval->mode = HSPVAR_MODE_MALLOC;
 }
 
 /*
@@ -143,6 +193,7 @@ static void HspVarStruct_Set( PVal *pval, PDAT *pdat, const void *in )
 	if ( fv_src->type == FLEXVAL_TYPE_ALLOC ) { sbFree( fv_src->ptr ); }
 	memcpy( pdat, fv, sizeof(FlexValue) );
 	//sbCopy( (char **)pdat, (char *)fv->ptr, fv->size );
+	HspVarStruct_OnElementModified(pval, fv - GetPtr(pval->pt));
 }
 
 /*
