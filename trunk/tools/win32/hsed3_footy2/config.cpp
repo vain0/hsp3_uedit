@@ -213,6 +213,7 @@ void DefaultColor(MYCOLOR *dest)
 	dest->Character.Macro.Conf         = DEFCOLOR_MACRO;
 	dest->Character.Comment.Conf       = DEFCOLOR_COMMENT;
 	dest->Character.Label.Conf         = DEFCOLOR_LABEL;
+	dest->Character.Var.Conf           = DEFCOLOR_VAR;
 	dest->NonCharacter.HalfSpace.Conf  = DEFCOLOR_HALF_SPACE;
 	dest->NonCharacter.FullSpace.Conf  = DEFCOLOR_FULL_SPACE;
 	dest->NonCharacter.Tab.Conf        = DEFCOLOR_TAB;

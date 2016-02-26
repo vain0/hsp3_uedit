@@ -3669,6 +3669,10 @@ int CToken::LabelDump( CMemBuf *out, int option )
 {
 	//		“o˜^‚³‚ê‚Ä‚¢‚éƒ‰ƒxƒ‹î•ñ‚ğerrbuf‚É“WŠJ
 	//
+	if ( tmp_lb ) {
+		tmp_lb->DumpHSPLabel( linebuf, option, LINEBUF_MAX - 256 );
+		out->PutStr( linebuf );
+	}
 	lb->DumpHSPLabel( linebuf, option, LINEBUF_MAX - 256 );
 	out->PutStr( linebuf );
 	return 0;

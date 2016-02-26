@@ -15,6 +15,7 @@
 #define def_maxlab 4096			// label object max (default)
 
 #define LAB_TYPE_MARK 0
+#define LAB_TYPE_VAR 1
 #define LAB_TYPE_SYSVAL 7
 #define LAB_TYPE_INTCMD 8
 #define LAB_TYPE_EXTCMD 9

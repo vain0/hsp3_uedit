@@ -58,6 +58,7 @@ void CHsc3::ResetError( void )
 
 CHsc3::CHsc3( void )
 {
+	symbuf = NULL;
 	errbuf = new CMemBuf( ERRBUF_SIZE );
 	lb_info = NULL;
 	addkw = NULL;
@@ -69,6 +70,7 @@ CHsc3::~CHsc3( void )
 {
 	if ( addkw != NULL ) { delete addkw; addkw=NULL; }
 	if ( errbuf != NULL ) { delete errbuf; errbuf=NULL; }
+	if ( symbuf != NULL ) { delete symbuf; symbuf = NULL; }
 }
 
 
@@ -259,6 +261,8 @@ int CHsc3::Compile( char *fname, char *outname, int mode )
 		res = tk.GenerateCode( fname, outname, mode );
 	}
 
+	GetCmdList(&tk, DUMPMODE_ALL);
+
 	return res;
 }
 
@@ -270,7 +274,17 @@ void CHsc3::SetCommonPath( char *path )
 }
 
 
-int CHsc3::GetCmdList( int option )
+int CHsc3::MoveCmdListToErrorBuf()
+{
+	if ( symbuf == NULL ) { return -1; }
+	delete errbuf;
+	errbuf = symbuf;
+	symbuf = NULL;
+	return 0;
+}
+
+
+void CHsc3::GetCmdList( int option )
 {
 	int res;
 	CToken tk;
@@ -278,18 +292,20 @@ int CHsc3::GetCmdList( int option )
 
 	tk.SetErrorBuf( errbuf );
 	tk.SetCommonPath( common_path );
-	tk.LabelRegist3( hsp_prestr );			// 標準キーワード
-	tk.LabelRegist3( hsp_prepp );			// プリプロセッサキーワード
-	AddSystemMacros( &tk, option );
-
 	res = tk.ExpandFile( &outbuf, "hspdef.as", "hspdef.as" );
-//	if ( res<-1 ) return -1;
-	tk.LabelDump( errbuf, DUMPMODE_ALL );
+	//if ( res < -1 ) return NULL;
+	GetCmdList( &tk, option );
+}
 
-	//errbuf->PutStr("-----\r\n");
-	//if ( addkw != NULL ) errbuf->PutStr( addkw->GetBuffer() );
 
-	return 0;
+void CHsc3::GetCmdList(CToken *tk, int option)
+{
+	if ( symbuf ) { delete symbuf; }
+	symbuf = new CMemBuf( ERRBUF_SIZE );
+	tk->LabelRegist3( hsp_prestr );			// 標準キーワード
+	tk->LabelRegist3( hsp_prepp );			// プリプロセッサキーワード
+	AddSystemMacros( tk, option );
+	tk->LabelDump(symbuf, option);
 }
 
 

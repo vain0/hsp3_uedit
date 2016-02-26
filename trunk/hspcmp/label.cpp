@@ -667,6 +667,9 @@ void CLabel::DumpHSPLabel( char *str, int option, int maxsize )
 		case LAB_TYPE_PPVAL:
 			if ( option & LAB_DUMPMODE_RESCMD ) typem = "sys|macro";
 			break;
+		case LAB_TYPE_VAR:
+			if ( option & LAB_DUMPMODE_RESCMD ) typem = "sys|var";
+			break;
 		default:
 			if ( option & LAB_DUMPMODE_RESCMD ) typem = "sys|func";
 			break;

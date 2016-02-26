@@ -60,6 +60,8 @@ static TYPE_TABLE TypeTable[] = {
 	"sys|func",		&(color.Character.Function.Conf),		EMPFLAG_NON_CS,
 	"sys|func|1",	&(color.Character.Function.Conf),		EMPFLAG_NON_CS,
 	"sys|func|2",	&(color.Character.Function.Conf),		EMPFLAG_NON_CS,
+	"sys|func|3",	&(color.Character.Function.Conf),		EMPFLAG_NON_CS,
+	"sys|var",      	&(color.Character.Var.Conf),			EMPFLAG_NON_CS,
 	"pre|func",		&(color.Character.Preprocessor.Conf),	0,
 	NULL
 };
@@ -101,10 +103,6 @@ int TableCompare(const void *pTable1, const void *pTable2)
 
 void InitClassify()
 {
-	int bufsize;
-	char *buf, *line, name[256], type[256];
-
-	int nCTSize = 0;
 /*
 	FILE *fp = fopen("hsptmp", "w");
 	char last;
@@ -125,7 +123,18 @@ void InitClassify()
 	hsc_refname( 0,(int)(szTitleName[0] == '\0' ? "???" : szTitleName), 0,0 );
 	hsc_objname( 0,(int)"obj", 0,0 );
 	//hsc_comp( 1,1,0,0 );
-	hsc3_getsym(0, 0, 0, 0);
+	UpdateClassify();
+}
+
+void UpdateClassify()
+{
+	//		キーワードの色分け情報を登録する
+
+	int bufsize;
+	char *buf, *line, name[256], type[256];
+	int nCTSize = 0;
+
+	hsc3_getsym(0xF, 0, 0, 0);
 	hsc3_messize((int)&bufsize, 0, 0, 0);
 	buf = (char *)malloc(bufsize+1);
 	hsc_getmes((int)buf, 0, 0, 0);
@@ -183,6 +192,8 @@ void InitClassify()
 // 強調文字の設定
 void SetClassify(int FootyID)
 {
+	Footy2ClearEmphasis(FootyID);
+
 	// 2008-02-17 Shark++ 要動作確認
 	for(CLASSIFY_TABLE *lpCT = ClassifyTable; lpCT->Word1[0] != '\0'; lpCT++) {
 		Footy2AddEmphasis(FootyID, lpCT->Word1, *lpCT->Word2 ? lpCT->Word2 : NULL, lpCT->Type, 

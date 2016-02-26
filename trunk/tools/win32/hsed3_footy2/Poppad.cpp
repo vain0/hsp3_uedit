@@ -470,6 +470,14 @@ static int GetFileTitle2( char *bname, char *tname )
 }
 
 
+static void onPostCompile()
+{
+	//		コンパイルの成功時に行う処理
+	UpdateClassify();
+	ResetClassify();
+}
+
+
 static void packgo( void )
 {
 	int a;
@@ -2331,6 +2339,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #else
                         TMes("Object file generated.");
 #endif
+						onPostCompile();
 					}
 					return 0;
 
@@ -2345,6 +2354,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #else
 					TMes("START.AX generated.");
 #endif
+					onPostCompile();
 					return 0;
 
 				case IDM_AUTOMAKE:
@@ -2358,6 +2368,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #else
 					TMes("Executable file generated.");
 #endif
+					onPostCompile();
 					return 0;
 
 				case IDM_COMP:
@@ -2377,17 +2388,20 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					}				
 					if (LOWORD (wParam)==IDM_COMP2) {
 						err_prt(hwnd);
+						onPostCompile();
 						return 0;
 					}	
 					if (LOWORD (wParam)==IDM_LOGCOMP) {
 						DialogBox (hInst, "Logcomp", hwnd, (DLGPROC)LogcompDlgProc );
 						if (hsp_logflag==0) return 0;
 						if (hsp_clmode==0) { hsprun_log("obj"); } else { hsprun_log_cl("obj"); }
+						onPostCompile();
 						return 0;
 					}
 
 				case IDM_RUN:
 					if (hsp_clmode==0) { hsprun("obj"); } else { hsprun_cl("obj"); }
+					onPostCompile();
 					return 0;
 
 				case IDM_COMP3:
@@ -2409,6 +2423,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 #else
 						TMes("Object file generated.");
 #endif
+						onPostCompile();
 						return 0;
 					}
 					strcpy( objname,"obj" );
@@ -2419,6 +2434,7 @@ LRESULT CALLBACK EditProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 					//a=tcomp_main( hsp_extstr, hsp_extstr, objname, errbuf,1 );
 					if (a) { err_prt(hwnd);return 0; }
 					if (hsp_clmode==0) { hsprun(objname); } else { hsprun_cl(objname); }
+					onPostCompile();
 					return 0;
 
 				case IDM_HSPERR:

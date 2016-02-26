@@ -21,6 +21,7 @@ typedef struct tagMyColor{
 		MYCOLORREF Macro;
 		MYCOLORREF Comment;
 		MYCOLORREF Label;
+		MYCOLORREF Var;
 	} Character;
 
 	struct{
@@ -93,6 +94,7 @@ typedef struct tagClassifyTable{
 #define DEFCOLOR_PREPROCESSOR     RGB(  0, 255, 192)
 #define DEFCOLOR_STRING           RGB(255, 255, 192)
 #define DEFCOLOR_LABEL            RGB(255, 192, 214)
+#define DEFCOLOR_VAR              RGB(255, 214, 192)
 #define DEFCOLOR_LINENUM          RGB( 49, 117, 189)
 #define DEFCOLOR_MACRO            RGB(192, 255, 255)
 #define DEFCOLOR_RULER_FONT       RGB(  0,   0,   0)
@@ -110,6 +112,7 @@ typedef struct tagClassifyTable{
 #define DEFCOLOR_RULER_DIVISION   RGB(  0,   0,   0)
 
 void InitClassify();
+void UpdateClassify();
 void SetClassify(int);
 void ResetClassify();
 void ByeClassify();

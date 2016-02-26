@@ -49,7 +49,9 @@ public:
 	void SetCommonPath( char *path );
 
 	//		Service
-	int GetCmdList( int option );
+	int MoveCmdListToErrorBuf();
+	void GetCmdList( int option );
+	void GetCmdList( CToken* tk, int option );
 	int OpenPackfile( void );
 	void ClosePackfile( void );
 	void GetPackfileOption( char *out, char *keyword, char *defval );
@@ -60,6 +62,7 @@ public:
 
 	//		Data
 	//
+	CMemBuf *symbuf;
 	CMemBuf *errbuf;
 	CMemBuf *pfbuf;
 	CMemBuf *addkw;

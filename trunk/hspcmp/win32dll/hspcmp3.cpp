@@ -400,7 +400,8 @@ EXPORT BOOL WINAPI hsc3_getsym ( int p1, int p2, int p3, int p4 )
 {
 	//
 	//		hsc3_getsym val  (type1)
-	//
+	if ( hsc3->MoveCmdListToErrorBuf() == 0 ) { return 0; }
+
 	hsc3->ResetError();
 	if (orgcompath==0) {
 		GetModuleFileName( NULL,compath,_MAX_PATH );
@@ -408,8 +409,8 @@ EXPORT BOOL WINAPI hsc3_getsym ( int p1, int p2, int p3, int p4 )
 		strcat( compath,"common\\" );
 	}
 	hsc3->SetCommonPath( compath );
-	if ( hsc3->GetCmdList( p1|2 ) ) return -1;
-	return 0;
+	hsc3->GetCmdList( p1|2 );
+	return hsc3->MoveCmdListToErrorBuf();
 }
 
 
