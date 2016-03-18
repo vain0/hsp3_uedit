@@ -1306,7 +1306,28 @@ static int cmdfunc_intcmd( int cmd )
 		code_setva( pv, ap, HSPVAR_FLAG_INT, &result );
 		break;
 		}
+	case 0x031:								// swaparray
+	{
+		PVal *pv[2];
+		for ( int i = 0; i < 2; ++i ) {
+			pv[i] = code_getpval();
+		}
+		HspVarCoreSwap(pv[0], pv[1]);
+		break;
+	}
+	case 0x032:								// swapvar
+		{
+		PVal *pv[2];
+		PDAT *pdat[2];
+		for ( int i = 0; i < 2; ++i ) {
+			APTR aptr = code_getva(&pv[i]);
+			pdat[i] = HspVarCorePtrAPTR(pv[i], aptr);
+		}
+		if ( pv[0]->flag != pv[1]->flag ) throw HSPERR_TYPE_MISMATCH;
 
+		hspvarproc[pv[0]->flag].SwapVar(pv[0], pdat[0], pv[1], pdat[1]);
+		break;
+		}
 	default:
 		throw HSPERR_UNSUPPORTED_FUNCTION;
 	}

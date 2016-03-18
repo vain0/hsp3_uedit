@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 #include "hspwnd.h"
 #include "supio.h"
 #include "dpmread.h"
@@ -55,6 +56,7 @@ static PVal prmvar;								// パラメーターテンポラリ変数の実態
 static	unsigned char *mem_di_val;				// Debug VALS info ptr
 static	int srcname;
 static	int funcres;							// 関数の戻り値型
+static PVal *pval_result;						// 関数の戻り値 (str, double, int 以外)
 
 /*------------------------------------------------------------*/
 /*
@@ -1559,7 +1561,7 @@ static void *reffunc_custom( int *type_res, int arg )
 		if ( hspctx->runmode == RUNMODE_END ) {
 			throw HSPERR_NONE;
 		}
-		throw HSPERR_NORETVAL;
+		ptr = pval_result->pt;
 	}
 
 	//			')'で終わるかを調べる
@@ -1696,8 +1698,16 @@ static void cmdfunc_return_setval( void )
 	case HSPVAR_FLAG_DOUBLE:
 		hspctx->refdval = *(double *)mpval->pt;
 		break;
+
 	default:
-		throw HSPERR_TYPE_MISMATCH;
+		if ( !pval_result ) {
+			pval_result = new PVal();
+			pval_result->flag = funcres;
+			pval_result->mode = HSPVAR_MODE_NONE;
+			HspVarCoreClearTemp(pval_result, funcres);
+		}
+		assert(mpval->support & HSPVAR_SUPPORT_TEMPVAR != 0);
+		HspVarCoreSwap(pval_result, mpval);
 	}
 }
 
@@ -2705,6 +2715,11 @@ void code_termfunc( void )
 	STRUCTDAT *st;
 	HSP3TYPEINFO *info;
 	PVal *pval;
+
+	if ( pval_result ) {
+		HspVarCoreDispose(pval_result);
+		delete pval_result;
+	}
 
 	//		モジュール変数デストラクタ呼び出し
 	//

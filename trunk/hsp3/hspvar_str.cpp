@@ -3,9 +3,11 @@
 //	HSPVAR core module
 //	onion software/onitama 2003/4
 //
+#include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "hspvar_core.h"
 #include "hsp3debug.h"
 
@@ -155,6 +157,22 @@ static void HspVarStr_Alloc( PVal *pval, const PVal *pval2 )
 	free( oldvar.master );
 }
 
+
+static void HspVarStr_MoveAlloc( PVal *pval, PVal *pval2 )
+{
+	HspVarCoreMoveAllocDefault(pval, pval2);
+
+	// STRINF::opt ‚ð“\‚è’¼‚·
+	if ( pval->mode == HSPVAR_MODE_MALLOC ) {
+		int size = GetVarSize(pval);
+		for ( int i = 0; i < (int)(size / sizeof(char*)); ++i ) {
+			char **pp = GetFlexBufPtr(pval, i);
+			sbSetOption( *pp, pp );
+		}
+	}
+}
+
+
 /*
 static void *HspVarStr_ArrayObject( PVal *pval, int *arg )
 {
@@ -182,6 +200,32 @@ static void HspVarStr_Set( PVal *pval, PDAT *pdat, const void *in )
 	pp = (char **)sbGetOption( (char *)pdat );
 	sbStrCopy( pp, (char *)in );
 	//strcpy( GetPtr(pval), (char *)in );
+}
+
+// SwapVar
+static void HspVarStr_SwapVar(PVal *pval, PDAT *pdat, PVal *pval2, PDAT *pdat2)
+{
+	bool is_clone1 = (pval->mode == HSPVAR_MODE_CLONE);
+	bool is_clone2 = (pval2->mode == HSPVAR_MODE_CLONE);
+	if ( is_clone1 && is_clone2 ) {
+		assert(pval->len[1] == 1 && pval2->len[1] == 1);
+		HspVarCoreSwap(pval, pval2);
+
+	} else if ( is_clone1 || is_clone2 ) {
+		char *tmp = sbAlloc(pval->size + 1);
+		sbStrCopy(&tmp, (char *)pdat);
+		HspVarStr_Set(pval, pdat, pdat2);
+		HspVarStr_Set(pval2, pdat2, tmp);
+		sbFree(tmp);
+
+	} else {
+		assert(pval->mode == HSPVAR_MODE_MALLOC && pval2->mode == HSPVAR_MODE_MALLOC);
+		char **pp1 = (char **)sbGetOption((char *)pdat);
+		char **pp2 = (char **)sbGetOption((char *)pdat2);
+		myswap(*pp1, *pp2);
+		sbSetOption(*pp1, pp1);
+		sbSetOption(*pp2, pp2);
+	}
 }
 
 // Add
@@ -250,6 +294,7 @@ void HspVarStr_Init( HspVarProc *p )
 	myproc = p;
 
 	p->Set = HspVarStr_Set;
+	p->SwapVar = HspVarStr_SwapVar;
 	p->Cnv = HspVarStr_Cnv;
 	p->GetPtr = HspVarStr_GetPtr;
 //	p->CnvCustom = HspVarStr_CnvCustom;
@@ -260,6 +305,7 @@ void HspVarStr_Init( HspVarProc *p )
 //	p->ArrayObject = HspVarStr_ArrayObject;
 	p->Alloc = HspVarStr_Alloc;
 	p->Free = HspVarStr_Free;
+	p->MoveAlloc = HspVarStr_MoveAlloc;
 
 	p->AddI = HspVarStr_AddI;
 //	p->SubI = HspVarStr_Invalid;

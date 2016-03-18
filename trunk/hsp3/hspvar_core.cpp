@@ -5,6 +5,7 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "hspvar_core.h"
 #include "hspvar_label.h"
 #include "hsp3debug.h"
@@ -127,9 +128,10 @@ void HspVarCoreRegisterType( int flag, HSPVAR_COREFUNC func )
 	procs = (void **)(&p->Cnv);
 	while(1) {
 		*procs = (void *)(PutInvalid);
-		if ( procs == (void **)(&p->LrI) ) break;
+		if ( procs == (void **)(&p->SwapVar) ) break;
 		procs++;
 	}
+	p->MoveAlloc = HspVarCoreMoveAllocDefault;
 
 	//	初期化関数の呼び出し
 
@@ -138,6 +140,36 @@ void HspVarCoreRegisterType( int flag, HSPVAR_COREFUNC func )
 
 
 /*------------------------------------------------------------*/
+
+void HspVarCoreSwap(PVal *pval, PVal *pval2)
+{
+	//		変数の中身を交換する
+
+	PVal temp;
+	temp.mode = HSPVAR_MODE_NONE;
+	hspvarproc[pval->flag].MoveAlloc(&temp, pval);
+	hspvarproc[pval2->flag].MoveAlloc(pval, pval2);
+	hspvarproc[temp.flag].MoveAlloc(pval2, &temp);
+	assert(temp.mode == HSPVAR_MODE_NONE);
+}
+
+void HspVarCoreMoveAllocDefault(PVal *pval1, PVal *pval2)
+{
+	//		MoveAlloc のデフォルト実装
+
+	assert(pval1->mode == HSPVAR_MODE_NONE);
+
+	int const varattr1 = pval1->support & HSPVAR_SUPPORT_VARATTR;
+	int const varattr2 = pval2->support & HSPVAR_SUPPORT_VARATTR;
+	
+	*pval1 = *pval2;
+
+	pval2->pt = NULL;
+	pval2->mode = HSPVAR_MODE_NONE;
+	
+	(pval1->support &= ~HSPVAR_SUPPORT_VARATTR) |= varattr1;
+	(pval2->support &= ~HSPVAR_SUPPORT_VARATTR) |= varattr2;
+}
 
 void HspVarCoreDupPtr( PVal *pval, int flag, void *ptr, int size )
 {

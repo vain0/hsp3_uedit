@@ -92,6 +92,12 @@ static int HspVarLabel_GetUsing( const PDAT *pdat )
 	return ( *pdat != NULL );
 }
 
+// SwapVar
+static void HspVarLabel_SwapVar(PVal *pval, PDAT *pdat, PVal *pval2, PDAT *pdat2)
+{
+	myswap(*GetPtr(pdat), *GetPtr(pdat2));
+}
+
 // Set
 static void HspVarLabel_Set( PVal *pval, PDAT *pdat, const void *in )
 {
@@ -114,6 +120,7 @@ static void AllocBlock( PVal *pval, PDAT *pdat, int size )
 void HspVarLabel_Init( HspVarProc *p )
 {
 	p->Set = HspVarLabel_Set;
+	p->SwapVar = HspVarLabel_SwapVar;
 	p->GetPtr = HspVarLabel_GetPtr;
 	p->GetSize = HspVarLabel_GetSize;
 	p->GetUsing = HspVarLabel_GetUsing;

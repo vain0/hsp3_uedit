@@ -145,6 +145,12 @@ static void HspVarStruct_Set( PVal *pval, PDAT *pdat, const void *in )
 	//sbCopy( (char **)pdat, (char *)fv->ptr, fv->size );
 }
 
+// SwapVar
+static void HspVarStruct_SwapVar(PVal *pval, PDAT *pdat, PVal *pval2, PDAT *pdat2)
+{
+	myswap(*(FlexValue *)(pdat), *(FlexValue *)(pdat2));
+}
+
 /*
 // INVALID
 static void HspVarStruct_Invalid( PDAT *pval, const void *val )
@@ -171,6 +177,7 @@ static void AllocBlock( PVal *pval, PDAT *pdat, int size )
 void HspVarStruct_Init( HspVarProc *p )
 {
 	p->Set = HspVarStruct_Set;
+	p->SwapVar = HspVarStruct_SwapVar;
 	p->GetPtr = HspVarStruct_GetPtr;
 //	p->Cnv = HspVarStruct_Cnv;
 //	p->CnvCustom = HspVarStruct_CnvCustom;

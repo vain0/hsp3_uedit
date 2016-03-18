@@ -107,6 +107,8 @@ char 	s_rec[1]= "", *hsp_prestr[] =
 	"$02e 8 sortstr",				// (3.5)
 	"$02f 8 sortnote",				// (3.5)
 	"$030 8 sortget",				// (3.5)
+	"$031 8 swaparray",				// (3.X)
+	"$032 8 swapvar",				// (3.X)
 
 	//	enhanced command (ver2.2)
 

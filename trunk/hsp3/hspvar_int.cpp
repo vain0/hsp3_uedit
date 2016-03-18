@@ -139,6 +139,12 @@ static void HspVarInt_Set( PVal *pval, PDAT *pdat, const void *in )
 	*GetPtr(pdat) = *((int *)(in));
 }
 
+// SwapVar
+static void HspVarInt_SwapVar(PVal *pval, PDAT *pdat, PVal *pval2, PDAT *pdat2)
+{
+	myswap(*GetPtr(pdat), *GetPtr(pdat2));
+}
+
 // Add
 static void HspVarInt_AddI( PDAT *pval, const void *val )
 {
@@ -259,6 +265,7 @@ static void AllocBlock( PVal *pval, PDAT *pdat, int size )
 void HspVarInt_Init( HspVarProc *p )
 {
 	p->Set = HspVarInt_Set;
+	p->SwapVar = HspVarInt_SwapVar;
 	p->Cnv = HspVarInt_Cnv;
 	p->GetPtr = HspVarInt_GetPtr;
 //	p->CnvCustom = HspVarInt_CnvCustom;

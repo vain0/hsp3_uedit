@@ -134,6 +134,12 @@ static void HspVarDouble_Set( PVal *pval, PDAT *pdat, const void *in )
 	memcpy(pdat, in, sizeof(double));
 }
 
+// SwapVar
+static void HspVarDouble_SwapVar(PVal *pval, PDAT *pdat, PVal *pval2, PDAT *pdat2)
+{
+	myswap(*GetPtr(pdat), *GetPtr(pdat2));
+}
+
 // Add
 static void HspVarDouble_AddI( PDAT *pval, const void *val )
 {
@@ -244,6 +250,7 @@ void HspVarDouble_Init( HspVarProc *p )
 	aftertype = &p->aftertype;
 
 	p->Set = HspVarDouble_Set;
+	p->SwapVar = HspVarDouble_SwapVar;
 	p->Cnv = HspVarDouble_Cnv;
 	p->GetPtr = HspVarDouble_GetPtr;
 //	p->CnvCustom = HspVarDouble_CnvCustom;

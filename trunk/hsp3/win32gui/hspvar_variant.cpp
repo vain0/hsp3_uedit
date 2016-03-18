@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <ocidl.h>
 
 #include "../hsp3code.h"
@@ -686,6 +685,14 @@ static void HspVarVariant_Set( PVal *pval, PDAT *pdat, const void *in )
 #endif
 }
 
+
+// SwapVar
+static void HspVarVariant_SwapVar(PVal *pval, PDAT *pdat, PVal *pval2, PDAT *pdat2)
+{
+	myswap(*(VARIANT *)(pdat), *(VARIANT *)(pdat2));
+}
+
+
 static void *GetBlockSize( PVal *pval, PDAT *pdat, int *size )
 {
 	*size = pval->size - ( ((char *)pdat) - pval->pt );
@@ -704,6 +711,7 @@ void HspVarVariant_Init( HspVarProc *p )
 	myproc = p;
 
 	p->Set = HspVarVariant_Set;
+	p->SwapVar = HspVarVariant_SwapVar;
 	p->GetPtr = HspVarVariant_GetPtr;
 //	p->Cnv = HspVarVariant_Cnv;
 //	p->CnvCustom = HspVarVariant_CnvCustom;
