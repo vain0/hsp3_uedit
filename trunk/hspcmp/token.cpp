@@ -693,10 +693,13 @@ void CToken::Calc_unary( CALCVAR &v )
 {
 	CALCVAR v1;
 	int op;
-	if ( ttype=='-' ) {
+	if ( ttype=='-' || ttype == '!' ) {
 		op=ttype; Calc_token();
 		Calc_unary(v1);
-		v1 = -v1;
+		switch ( op ) {
+			case '-': v1 = -v1; break;
+			case '!': v1 = (v1 == 0 ? 1 : 0); break;
+		}
 	} else {
 		Calc_factor(v1);
 	}

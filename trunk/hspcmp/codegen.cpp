@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "../hsp3/hsp3config.h"
 #include "../hsp3/hsp3debug.h"
@@ -201,13 +202,23 @@ void CToken::CalcCG_unary( void )
 	//		íPçÄââéZéq
 	//
 	int op;
-	if ( ttype=='-' ) {
-		op=ttype; CalcCG_token_exprbeg();
+	if ( ttype == '-' || ttype == '!' ) {
+		op = ttype; CalcCG_token_exprbeg();
 		if ( is_statement_end(ttype) ) throw CGERROR_CALCEXP;
 		CalcCG_unary();
 		texflag = 0;
-		PutCS( TYPE_INUM, -1, texflag );
-		CalcCG_regmark( '*' );
+
+		switch ( op ) {
+			case '-':
+				PutCS( TYPE_INUM, -1, texflag );
+				CalcCG_regmark( '*' );
+				break;
+			case '!':
+				PutCS( TYPE_INUM, 0, texflag );
+				CalcCG_regmark( '=' );
+				break;
+			default: assert(false);
+		}
 	} else {
 		CalcCG_factor();
 	}
